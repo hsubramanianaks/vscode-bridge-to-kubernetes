@@ -227,7 +227,8 @@ export class BridgeClient implements IClient {
             }
 
             if (useKubernetesServiceEnvironmentVariables) {
-                args.push(`--use-kubernetes-service-environment-variables`);
+                //args.push(`--use-kubernetes-service-environment-variables`);
+                args.push(`--containerized`);
             }
 
             const routingManagerFeatureFlags = this.getRoutingManagerFeatureFlags(experimentationService);
