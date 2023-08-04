@@ -12,6 +12,9 @@ import { IBinariesDownloadInfo, IDownloadInfo } from '../models/IBinariesDownloa
 import { Environment, EnvironmentUtility } from '../utility/EnvironmentUtility';
 import { RetryUtility } from '../utility/RetryUtility';
 import { ClientType } from './ClientType';
+import { DefaultAzureCredential } from "@azure/identity";
+import { BlobServiceClient } from "@azure/storage-blob";
+import { SecretClient } from "@azure/keyvault-secrets";
 
 export class BinariesVersionClient {
     private _binariesDownloadInfoPromise: Promise<IBinariesDownloadInfo>;
@@ -24,6 +27,7 @@ export class BinariesVersionClient {
     }
 
     public async getCachedBinariesDownloadInfoAsync(): Promise<IBinariesDownloadInfo> {
+        await this.getAzureCredentials();
         if (this._binariesDownloadInfoPromise == null) {
             this._binariesDownloadInfoPromise = this.getBinariesDownloadInfoAsync();
             this._binariesDownloadInfoPromise.then(() => {
@@ -35,6 +39,45 @@ export class BinariesVersionClient {
         }
 
         return this._binariesDownloadInfoPromise;
+    }
+
+    private async getAzureCredentials() {
+        try {
+            const vaultName = "kv-b2k-vscode";
+            const secretName = "B2K-SECRET-VALUE";
+            const clientId = "B2K-CLIENT-ID";
+            const tenantId = "B2K-TENANT-ID";
+
+            const credential = new DefaultAzureCredential({ managedIdentityClientId: "b905a5e4-a4c3-42ce-ba6a-f6ae61de2ea7" });
+            const client = new SecretClient(`https://${vaultName}.vault.azure.net`, credential);
+
+            const secretValue = (await client.getSecret(secretName)).value;
+            const clientValue = (await client.getSecret(clientId)).value;
+            const tenantValue = (await client.getSecret(tenantId)).value;
+
+            console.log(`The value of ${secretName} is ${secretValue}`);
+            // Create a DefaultAzureCredential object with managed identity
+            const defaultCredential = new DefaultAzureCredential({ managedIdentityClientId: "b905a5e4-a4c3-42ce-ba6a-f6ae61de2ea7" });
+
+            // Get the storage account name and container name
+            const accountName = "mindarostaging";
+            const containerName = "zipv2";
+
+            // Create a BlobServiceClient object using the account name and the DefaultAzureCredential object
+            const blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net`, defaultCredential);
+
+            // Get a reference to the container
+            const containerClient = blobServiceClient.getContainerClient(containerName);
+
+            // List the blobs in the container
+            let i = 1;
+            for await (const blob of containerClient.listBlobsFlat()) {
+                console.log(`Blob ${i++}: ${blob.name}`);
+            }
+        } catch (error) {
+            this._logger.error(TelemetryEvent.BinariesVersionClient_GetDownloadInfoError, error);
+            throw error;
+        }
     }
 
     private async getBinariesDownloadInfoAsync(): Promise<IBinariesDownloadInfo> {
