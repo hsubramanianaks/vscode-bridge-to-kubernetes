@@ -15,6 +15,7 @@ import { ClientType } from './ClientType';
 import { DefaultAzureCredential } from "@azure/identity";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { SecretClient } from "@azure/keyvault-secrets";
+import * as dotenv from 'dotenv';
 
 export class BinariesVersionClient {
     private _binariesDownloadInfoPromise: Promise<IBinariesDownloadInfo>;
@@ -43,21 +44,16 @@ export class BinariesVersionClient {
 
     private async getAzureCredentials() {
         try {
-            const vaultName = "kv-b2k-vscode";
-            const secretName = "B2K-SECRET-VALUE";
-            const clientId = "B2K-CLIENT-ID";
-            const tenantId = "B2K-TENANT-ID";
-
-            const credential = new DefaultAzureCredential({ managedIdentityClientId: "b905a5e4-a4c3-42ce-ba6a-f6ae61de2ea7" });
-            const client = new SecretClient(`https://${vaultName}.vault.azure.net`, credential);
-
-            const secretValue = (await client.getSecret(secretName)).value;
-            const clientValue = (await client.getSecret(clientId)).value;
-            const tenantValue = (await client.getSecret(tenantId)).value;
-
-            console.log(`The value of ${secretName} is ${secretValue}`);
-            // Create a DefaultAzureCredential object with managed identity
-            const defaultCredential = new DefaultAzureCredential({ managedIdentityClientId: "b905a5e4-a4c3-42ce-ba6a-f6ae61de2ea7" });
+            const result = dotenv.config({
+                path: '/home/hsubramanian/repos/vscode-bridge-to-kubernetes/.env'
+            });
+            if (result.error) {
+                throw result.error
+            }
+            console.log(result.parsed);
+            console.log(process.env.AZURE_TENANT_ID);
+            // Create a DefaultAzureCredential object
+            const defaultCredential = new DefaultAzureCredential();
 
             // Get the storage account name and container name
             const accountName = "mindarostaging";
