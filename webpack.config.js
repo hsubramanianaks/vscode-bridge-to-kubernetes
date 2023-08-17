@@ -24,12 +24,12 @@ const config = {
     },
     devtool: 'source-map',
     externals: {
-        vscode: 'commonjs vscode',
+        'vscode': 'commonjs vscode', // ignored because it doesn't exist,
+        'applicationinsights-native-metrics': 'commonjs applicationinsights-native-metrics', // ignored because we don't ship native module
+        '@opentelemetry/tracing': 'commonjs @opentelemetry/tracing', // ignored because we don't ship this module
+        '@opentelemetry/instrumentation': 'commonjs @opentelemetry/instrumentation', // ignored because we don't ship this module
+        '@azure/opentelemetry-instrumentation-azure-sdk': 'commonjs @azure/opentelemetry-instrumentation-azure-sdk', // ignored because we don't ship this module
         fsevents: "require('fsevents')", // This is required to load fsevents for chokidar package
-        'applicationinsights-native-metrics': 'commonjs applicationinsights-native-metrics',
-            '@opentelemetry/tracing': 'commonjs @opentelemetry/tracing',
-            '@opentelemetry/instrumentation': 'commonjs @opentelemetry/instrumentation',
-            '@azure/opentelemetry-instrumentation-azure-sdk': 'commonjs @azure/opentelemetry-instrumentation-azure-sdk'
     },
     resolve: {
         extensions: ['.ts', '.js']

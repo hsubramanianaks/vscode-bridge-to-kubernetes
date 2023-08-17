@@ -84,7 +84,7 @@ export class ExtensionRoot {
 
         this._reporter = new TelemetryReporter(
             packageJsonContent[`aiKey`]);
-        this._reporter.sendRawTelemetryEvent(`Testing with new telemtry extension version is ${extensionVersion}`);
+        this._reporter.sendTelemetryEvent("ActivatedB2k");
         Telemetry.init(this._reporter, /*featureName*/ null, () => this._fileLogWriter.getLastLogsAsync(), /*errorToString*/ null);
 
         // Initialize ExP
