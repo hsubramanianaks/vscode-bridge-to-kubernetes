@@ -26,8 +26,10 @@ const config = {
     externals: {
         vscode: 'commonjs vscode',
         fsevents: "require('fsevents')", // This is required to load fsevents for chokidar package
-            'applicationinsights-native-metrics': 'applicationinsights-native-metrics',
-            '@opentelemetry/tracing': '@opentelemetry/tracing'
+        'applicationinsights-native-metrics': 'commonjs applicationinsights-native-metrics',
+            '@opentelemetry/tracing': 'commonjs @opentelemetry/tracing',
+            '@opentelemetry/instrumentation': 'commonjs @opentelemetry/instrumentation',
+            '@azure/opentelemetry-instrumentation-azure-sdk': 'commonjs @azure/opentelemetry-instrumentation-azure-sdk'
     },
     resolve: {
         extensions: ['.ts', '.js']
