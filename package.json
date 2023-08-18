@@ -2,7 +2,7 @@
     "name": "mindaro",
     "displayName": "Bridge to Kubernetes",
     "description": "Rapid Kubernetes development for teams",
-    "version": "2.0.120230817",
+    "version": "2.0.120230818-poc",
     "icon": "images/bridge128.png",
     "preview": false,
     "publisher": "mindaro",

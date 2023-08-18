@@ -38,7 +38,8 @@ export class ConnectWizard {
         wizardReason: string,
         targetResourceName: string = null,
         targetResourceNamespace: string = null,
-        targetResourceType: ResourceType = ResourceType.Service
+        targetResourceType: ResourceType = ResourceType.Service,
+        kubeConfigLocation: string = null
     ): Promise<IWizardOutput> {
         const prerequisitesAlertCallback = CheckExtensionSupport.validatePrerequisites(this._logger, /*validatePostDownloadPrerequisites*/ false);
         if (prerequisitesAlertCallback != null) {
@@ -78,7 +79,7 @@ export class ConnectWizard {
                 const bridgeClient = await this._binariesUtility.tryGetBridgeAsync();
                 let currentContext: IKubeconfigEnrichedContext = null;
                 if (kubectlClient != null) {
-                    currentContext = await kubectlClient.getCurrentContextAsync();
+                    currentContext = await kubectlClient.getCurrentContextAsync(kubeConfigLocation);
                 }
 
                 if (kubectlClient == null || bridgeClient == null || currentContext == null) {

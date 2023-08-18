@@ -56,15 +56,19 @@ export class WorkspaceFolderManager {
             resolveConnectWorkspaceFoldersInitializationPromise = resolve;
         });
 
-        this._context.subscriptions.push(vscode.commands.registerCommand(Constants.ConnectConfigureCommand, async () => {
+        this._context.subscriptions.push(vscode.commands.registerCommand(Constants.ConnectConfigureCommand, commandHandler));
+
+        async function commandHandler(arg: any) {
             try {
-                await this.runConfigureCommandAsync(vscode.workspace.workspaceFolders);
+                arg ? await this.runConfigureCommandAsync(vscode.workspace.workspaceFolders, arg.arg1, arg.arg2)
+                    : await this.runConfigureCommandAsync(vscode.workspace.workspaceFolders);
+
             }
             catch (error) {
                 vscode.window.showErrorMessage(`Failed to run the ${Constants.ConnectConfigureCommand} command: ${error.message}`);
                 this._logger.error(TelemetryEvent.ConfigureCommandError, error);
             }
-        }));
+        }
 
         this._context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(async workspaceChangeEvent => {
             await this.onDidChangeWorkspaceFoldersAsync(workspaceChangeEvent);
@@ -334,7 +338,7 @@ export class WorkspaceFolderManager {
                     this._experimentationService,
                     this._binariesUtility,
                     this._logger,
-                    /*connectStartedCallback*/ (alreadyConnected: boolean): void => {
+                    /*connectStartedCallback*/(alreadyConnected: boolean): void => {
                         // If routing is enabled, we will refresh the ingress list to only show routing ingresses.
                         // If routing is not enabled (isolateAs == null), we will ensure that we don't have such ingresses.
                         this._statusBarMenu.triggerIngressesRefreshAsync(isolateAs);
@@ -373,8 +377,9 @@ export class WorkspaceFolderManager {
         }
     }
 
-    private async runConfigureCommandAsync(workspaceFolders: readonly vscode.WorkspaceFolder[]): Promise<void> {
+    private async runConfigureCommandAsync(workspaceFolders: readonly vscode.WorkspaceFolder[], clusterName: string, configLocation: string): Promise<void> {
         this._logger.trace(TelemetryEvent.ConfigureCommandTriggered);
+        this._logger.trace('ConfigLocation' + configLocation);
 
         if (workspaceFolders == null || workspaceFolders.length < 1) {
             this._logger.warning(`No workspace folders available to configure ${Constants.ProductName}`);
@@ -388,7 +393,7 @@ export class WorkspaceFolderManager {
             return;
         }
 
-        await this.runConnectWizardAndConfigurationAsync(workspaceFolder, /*wizardReason*/ `ConfigurationCommand`);
+        await this.runConnectWizardAndConfigurationAsync(workspaceFolder, /*wizardReason*/ `ConfigurationCommand`, configLocation);
     }
 
     private async onDidChangeWorkspaceFoldersAsync(workspaceChangeEvent: vscode.WorkspaceFoldersChangeEvent): Promise<void> {
@@ -480,6 +485,7 @@ export class WorkspaceFolderManager {
     private async runConnectWizardAndConfigurationAsync(
         workspaceFolder: vscode.WorkspaceFolder,
         wizardReason: string,
+        kubeConfigLocation: string = null,
         targetResourceName: string = null,
         targetResourceNamespace: string = null,
         targetResourceType: ResourceType = ResourceType.Service
@@ -495,7 +501,8 @@ export class WorkspaceFolderManager {
             wizardReason,
             targetResourceName,
             targetResourceNamespace,
-            targetResourceType
+            targetResourceType,
+            kubeConfigLocation
         );
         if (wizardOutput == null) {
             return null;

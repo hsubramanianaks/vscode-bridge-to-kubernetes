@@ -95,11 +95,12 @@ export class ConnectWorkspaceFolder extends WorkspaceFolderBase {
         wizardReason: string,
         targetResourceName: string = null,
         targetResourceNamespace: string = null,
-        targetResourceType: ResourceType = ResourceType.Service
+        targetResourceType: ResourceType = ResourceType.Service,
+        kubeConfigLocation: string = null
     ): Promise<IWizardOutput> {
         try {
             const connectWizard = new ConnectWizard(this._binariesUtility, this._workspaceFolder, this._logger);
-            return await connectWizard.runAsync(wizardReason, targetResourceName, targetResourceNamespace, targetResourceType);
+            return await connectWizard.runAsync(wizardReason, targetResourceName, targetResourceNamespace, targetResourceType, kubeConfigLocation);
         }
         catch (error) {
             this._logger.error(TelemetryEvent.Connect_Error, redactJsonObject(error));

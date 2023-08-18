@@ -35,11 +35,13 @@ export class KubectlClient implements IClient {
 
     public readonly Type: ClientType = ClientType.Kubectl;
 
-    public async getCurrentContextAsync(): Promise<IKubeconfigEnrichedContext> {
+    public async getCurrentContextAsync(kubeConfigLocation: string = null): Promise<IKubeconfigEnrichedContext> {
         let kubeconfigPath: string = null;
         let kubectlOutput: string = null;
         try {
-            kubeconfigPath = await this._accountContextManager.getKubeconfigPathAsync(/*shouldDisplayErrorIfNeeded*/ false);
+            if (kubeConfigLocation == null) {
+                kubeconfigPath = await this._accountContextManager.getKubeconfigPathAsync(/*shouldDisplayErrorIfNeeded*/ false);
+            }
             kubectlOutput = await this.runKubectlCommandAsync([ `config`, `view`, `--minify`, `-o`, `json` ], kubeconfigPath, /*quiet*/ true);
         }
         catch (error) {
@@ -47,7 +49,7 @@ export class KubectlClient implements IClient {
                 // Special case: the kubeconfig file doesn't exist. Let's improve the error message to help the user.
                 error = new Error(`No kubeconfig file found at path ${kubeconfigPath}`);
             }
-            this._logger.error(TelemetryEvent.KubectlClient_CurrentContextRetrievalError, error);
+            this.   _logger.error(TelemetryEvent.KubectlClient_CurrentContextRetrievalError, error);
             throw new Error(`Failed to get the current context from the kubeconfig: ${error.message}`);
         }
 
